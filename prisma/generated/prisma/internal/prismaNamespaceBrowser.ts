@@ -109,7 +109,7 @@ export const ServiceScalarFieldEnum = {
   id: 'id',
   name: 'name',
   durationMinutes: 'durationMinutes',
-  requiredStaffType: 'requiredStaffType',
+  staffType: 'staffType',
   userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -3,7 +3,7 @@ model Service {
   id                  String   @id @default(uuid())
   name                String   
   durationMinutes     Int      
-  requiredStaffType   String  
+  staffType   String  
   userId              String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

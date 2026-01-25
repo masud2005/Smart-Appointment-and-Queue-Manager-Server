@@ -42,7 +42,7 @@ CREATE TABLE "services" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "durationMinutes" INTEGER NOT NULL,
-    "requiredStaffType" TEXT NOT NULL,
+    "staffType" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
