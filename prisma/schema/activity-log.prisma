@@ -1,0 +1,28 @@
+
+enum ActivityLogAction {
+  APPOINTMENT_CREATED
+  APPOINTMENT_UPDATED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_COMPLETED
+  APPOINTMENT_NO_SHOW
+  STAFF_ASSIGNED
+  QUEUE_ASSIGNED
+}
+
+model ActivityLog {
+  id            String            @id @default(uuid())
+  action        ActivityLogAction
+  message       String  
+  userId        String
+  appointmentId String?     
+  staffId       String?
+  createdAt     DateTime          @default(now())
+
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointment   Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  staff         Staff?            @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([action])
+  @@map("activity_logs")
+}

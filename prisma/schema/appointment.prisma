@@ -1,0 +1,31 @@
+enum AppointmentStatus {
+  WAITING     
+  SCHEDULED  
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id            String             @id @default(uuid())
+  customerName  String
+  dateTime      DateTime           
+  endTime       DateTime
+  queuePosition Int?
+  status        AppointmentStatus  @default(WAITING)
+  userId        String
+  serviceId     String
+  staffId       String?               
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service       Service            @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  staff         Staff?             @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  activityLogs  ActivityLog[]
+
+  @@index([staffId, dateTime])
+  @@index([userId, dateTime])
+  @@index([userId, status])
+  @@map("appointments")
+}

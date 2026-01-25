@@ -1,0 +1,22 @@
+enum StaffAvailabilityStatus {
+  AVAILABLE
+  ON_LEAVE
+}
+
+model Staff {
+  id                  String                   @id @default(uuid())
+  name                String
+  serviceType         String                  
+  dailyCapacity       Int                      @default(5)
+  availabilityStatus  StaffAvailabilityStatus  @default(AVAILABLE)
+  userId              String
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments        Appointment[]
+  activityLogs        ActivityLog[]
+
+  @@index([userId, availabilityStatus])
+  @@map("staff")
+}
