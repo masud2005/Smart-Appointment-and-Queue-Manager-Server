@@ -8,4 +8,9 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/ActivityLog'
+export type * from './models/Appointment'
+export type * from './models/Service'
+export type * from './models/Staff'
+export type * from './models/User'
 export type * from './commonInputTypes'

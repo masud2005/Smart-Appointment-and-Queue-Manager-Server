@@ -51,7 +51,11 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-
+  ActivityLog: 'ActivityLog',
+  Appointment: 'Appointment',
+  Service: 'Service',
+  Staff: 'Staff',
+  User: 'User'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -68,4 +72,97 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const ActivityLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  message: 'message',
+  userId: 'userId',
+  appointmentId: 'appointmentId',
+  staffId: 'staffId',
+  createdAt: 'createdAt'
+} as const
+
+export type ActivityLogScalarFieldEnum = (typeof ActivityLogScalarFieldEnum)[keyof typeof ActivityLogScalarFieldEnum]
+
+
+export const AppointmentScalarFieldEnum = {
+  id: 'id',
+  customerName: 'customerName',
+  dateTime: 'dateTime',
+  endTime: 'endTime',
+  queuePosition: 'queuePosition',
+  status: 'status',
+  userId: 'userId',
+  serviceId: 'serviceId',
+  staffId: 'staffId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
+export const ServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  durationMinutes: 'durationMinutes',
+  requiredStaffType: 'requiredStaffType',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServiceScalarFieldEnum = (typeof ServiceScalarFieldEnum)[keyof typeof ServiceScalarFieldEnum]
+
+
+export const StaffScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  serviceType: 'serviceType',
+  dailyCapacity: 'dailyCapacity',
+  availabilityStatus: 'availabilityStatus',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof StaffScalarFieldEnum]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

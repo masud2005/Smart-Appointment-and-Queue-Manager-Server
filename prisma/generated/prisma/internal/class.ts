@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.3.0",
   "engineVersion": "9d6ad21cbbceab97458517b147a6a09ff43aa735",
   "activeProvider": "postgresql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n",
+  "inlineSchema": "enum ActivityLogAction {\n  APPOINTMENT_CREATED\n  APPOINTMENT_UPDATED\n  APPOINTMENT_CANCELLED\n  APPOINTMENT_COMPLETED\n  APPOINTMENT_NO_SHOW\n  STAFF_ASSIGNED\n  QUEUE_ASSIGNED\n}\n\nmodel ActivityLog {\n  id            String            @id @default(uuid())\n  action        ActivityLogAction\n  message       String\n  userId        String\n  appointmentId String?\n  staffId       String?\n  createdAt     DateTime          @default(now())\n\n  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)\n  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)\n  staff       Staff?       @relation(fields: [staffId], references: [id], onDelete: SetNull)\n\n  @@index([userId, createdAt(sort: Desc)])\n  @@index([action])\n  @@map(\"activity_logs\")\n}\n\nenum AppointmentStatus {\n  WAITING\n  SCHEDULED\n  COMPLETED\n  CANCELLED\n  NO_SHOW\n}\n\nmodel Appointment {\n  id            String            @id @default(uuid())\n  customerName  String\n  dateTime      DateTime\n  endTime       DateTime\n  queuePosition Int?\n  status        AppointmentStatus @default(WAITING)\n  userId        String\n  serviceId     String\n  staffId       String?\n  createdAt     DateTime          @default(now())\n  updatedAt     DateTime          @updatedAt\n\n  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)\n  service      Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)\n  staff        Staff?        @relation(fields: [staffId], references: [id], onDelete: SetNull)\n  activityLogs ActivityLog[]\n\n  @@index([staffId, dateTime])\n  @@index([userId, dateTime])\n  @@index([userId, status])\n  @@map(\"appointments\")\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel Service {\n  id                String   @id @default(uuid())\n  name              String\n  durationMinutes   Int\n  requiredStaffType String\n  userId            String\n  createdAt         DateTime @default(now())\n  updatedAt         DateTime @updatedAt\n\n  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)\n  appointments Appointment[]\n\n  @@index([userId])\n  @@map(\"services\")\n}\n\nenum StaffAvailabilityStatus {\n  AVAILABLE\n  ON_LEAVE\n}\n\nmodel Staff {\n  id                 String                  @id @default(uuid())\n  name               String\n  serviceType        String\n  dailyCapacity      Int                     @default(5)\n  availabilityStatus StaffAvailabilityStatus @default(AVAILABLE)\n  userId             String\n  createdAt          DateTime                @default(now())\n  updatedAt          DateTime                @updatedAt\n\n  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)\n  appointments Appointment[]\n  activityLogs ActivityLog[]\n\n  @@index([userId, availabilityStatus])\n  @@map(\"staff\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  name      String?\n  email     String   @unique\n  password  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  staffMembers Staff[]\n  services     Service[]\n  appointments Appointment[]\n  activityLogs ActivityLog[]\n\n  @@index([email])\n  @@map(\"users\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"ActivityLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"enum\",\"type\":\"ActivityLogAction\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"appointmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"staffId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ActivityLogToUser\"},{\"name\":\"appointment\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"ActivityLogToAppointment\"},{\"name\":\"staff\",\"kind\":\"object\",\"type\":\"Staff\",\"relationName\":\"ActivityLogToStaff\"}],\"dbName\":\"activity_logs\"},\"Appointment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"customerName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dateTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"queuePosition\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"AppointmentStatus\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"serviceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"staffId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"service\",\"kind\":\"object\",\"type\":\"Service\",\"relationName\":\"AppointmentToService\"},{\"name\":\"staff\",\"kind\":\"object\",\"type\":\"Staff\",\"relationName\":\"AppointmentToStaff\"},{\"name\":\"activityLogs\",\"kind\":\"object\",\"type\":\"ActivityLog\",\"relationName\":\"ActivityLogToAppointment\"}],\"dbName\":\"appointments\"},\"Service\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"durationMinutes\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"requiredStaffType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ServiceToUser\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToService\"}],\"dbName\":\"services\"},\"Staff\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"serviceType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dailyCapacity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"availabilityStatus\",\"kind\":\"enum\",\"type\":\"StaffAvailabilityStatus\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"StaffToUser\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToStaff\"},{\"name\":\"activityLogs\",\"kind\":\"object\",\"type\":\"ActivityLog\",\"relationName\":\"ActivityLogToStaff\"}],\"dbName\":\"staff\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"staffMembers\",\"kind\":\"object\",\"type\":\"Staff\",\"relationName\":\"StaffToUser\"},{\"name\":\"services\",\"kind\":\"object\",\"type\":\"Service\",\"relationName\":\"ServiceToUser\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToUser\"},{\"name\":\"activityLogs\",\"kind\":\"object\",\"type\":\"ActivityLog\",\"relationName\":\"ActivityLogToUser\"}],\"dbName\":\"users\"}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -60,8 +60,8 @@ export interface PrismaClientConstructor {
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Users
-   * const users = await prisma.user.findMany()
+   * // Fetch zero or more ActivityLogs
+   * const activityLogs = await prisma.activityLog.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -82,8 +82,8 @@ export interface PrismaClientConstructor {
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more ActivityLogs
+ * const activityLogs = await prisma.activityLog.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -176,7 +176,55 @@ export interface PrismaClient<
     extArgs: ExtArgs
   }>>
 
-    
+      /**
+   * `prisma.activityLog`: Exposes CRUD operations for the **ActivityLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ActivityLogs
+    * const activityLogs = await prisma.activityLog.findMany()
+    * ```
+    */
+  get activityLog(): Prisma.ActivityLogDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.appointment`: Exposes CRUD operations for the **Appointment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Appointments
+    * const appointments = await prisma.appointment.findMany()
+    * ```
+    */
+  get appointment(): Prisma.AppointmentDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.service`: Exposes CRUD operations for the **Service** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Services
+    * const services = await prisma.service.findMany()
+    * ```
+    */
+  get service(): Prisma.ServiceDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.staff`: Exposes CRUD operations for the **Staff** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Staff
+    * const staff = await prisma.staff.findMany()
+    * ```
+    */
+  get staff(): Prisma.StaffDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Users
+    * const users = await prisma.user.findMany()
+    * ```
+    */
+  get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

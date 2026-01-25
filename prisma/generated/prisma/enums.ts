@@ -9,7 +9,33 @@
 * 🟢 You can import this file directly.
 */
 
+export const ActivityLogAction = {
+  APPOINTMENT_CREATED: 'APPOINTMENT_CREATED',
+  APPOINTMENT_UPDATED: 'APPOINTMENT_UPDATED',
+  APPOINTMENT_CANCELLED: 'APPOINTMENT_CANCELLED',
+  APPOINTMENT_COMPLETED: 'APPOINTMENT_COMPLETED',
+  APPOINTMENT_NO_SHOW: 'APPOINTMENT_NO_SHOW',
+  STAFF_ASSIGNED: 'STAFF_ASSIGNED',
+  QUEUE_ASSIGNED: 'QUEUE_ASSIGNED'
+} as const
+
+export type ActivityLogAction = (typeof ActivityLogAction)[keyof typeof ActivityLogAction]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const AppointmentStatus = {
+  WAITING: 'WAITING',
+  SCHEDULED: 'SCHEDULED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW'
+} as const
+
+export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof AppointmentStatus]
+
+
+export const StaffAvailabilityStatus = {
+  AVAILABLE: 'AVAILABLE',
+  ON_LEAVE: 'ON_LEAVE'
+} as const
+
+export type StaffAvailabilityStatus = (typeof StaffAvailabilityStatus)[keyof typeof StaffAvailabilityStatus]
