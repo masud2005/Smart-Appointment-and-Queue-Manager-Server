@@ -10,4 +10,6 @@ export interface AuthResponse {
     name?: string;
   };
   message: string;
+  token?: string;
 }
+

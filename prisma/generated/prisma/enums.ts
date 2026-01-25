@@ -39,3 +39,11 @@ export const StaffAvailabilityStatus = {
 } as const
 
 export type StaffAvailabilityStatus = (typeof StaffAvailabilityStatus)[keyof typeof StaffAvailabilityStatus]
+
+
+export const OtpType = {
+  VERIFICATION: 'VERIFICATION',
+  RESET_PASSWORD: 'RESET_PASSWORD'
+} as const
+
+export type OtpType = (typeof OtpType)[keyof typeof OtpType]

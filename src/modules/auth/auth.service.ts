@@ -1,55 +1,38 @@
 import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
   BadRequestException,
+  ConflictException,
+  Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
-import * as nodemailer from 'nodemailer';
-import { PrismaService } from '../../database/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { getMailConfig } from '../../config/mail.config';
+import { CryptoUtil, JwtUtil, MailUtil, OtpUtil, ResponseUtil } from '../../utils';
 import {
-  RegisterDto,
-  LoginDto,
-  SendOtpDto,
-  VerifyOtpDto,
-  ResendOtpDto,
   ChangePasswordDto,
   ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResendOtpDto,
   ResetPasswordDto,
+  SendOtpDto,
+  VerifyOtpDto,
 } from './dto';
-import { JwtPayload, AuthResponse } from '../../common/interfaces/auth.types';
-
-interface OtpStore {
-  otp: string;
-  expiresAt: Date;
-  attempts: number;
-}
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  private otpStore = new Map<string, OtpStore>();
-  private transporter: nodemailer.Transporter;
-
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT'),
-      secure: false,
-      auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASS'),
-      },
-    });
+    const mailConfig = getMailConfig();
+    MailUtil.initialize(mailConfig);
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  async register(registerDto: RegisterDto) {
     const { email, password, name } = registerDto;
     const existingUser = await this.prisma.client.user.findUnique({
       where: { email },
@@ -59,7 +42,7 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await CryptoUtil.hashPassword(password);
 
     const user = await this.prisma.client.user.create({
       data: {
@@ -74,17 +57,26 @@ export class AuthService {
       },
     });
 
-    return {
+    const responseData: any = {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name as string,
+        name: user.name,
       },
-      message: 'User registered successfully',
     };
+
+    if (this.configService.get<string>('NODE_ENV') === 'development') {
+      responseData.token = JwtUtil.generateAccessToken(
+        this.jwtService,
+        user.id,
+        user.email,
+      );
+    }
+
+    return ResponseUtil.created(responseData, 'User registered successfully');
   }
 
-  async login(loginDto: LoginDto): Promise<AuthResponse> {
+  async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -95,28 +87,36 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await CryptoUtil.comparePassword(
+      password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return {
+    const responseData: any = {
       user: {
         id: user.id,
-        name: user.name as string,
+        name: user.name,
         email: user.email,
       },
-      message: 'Login successful',
     };
+
+    if (this.configService.get<string>('NODE_ENV') === 'development') {
+      responseData.token = JwtUtil.generateAccessToken(
+        this.jwtService,
+        user.id,
+        user.email,
+      );
+    }
+
+    return ResponseUtil.success(responseData, 'Login successful');
   }
 
-  async sendOtp(sendOtpDto: SendOtpDto): Promise<{ message: string }> {
+  async sendOtp(sendOtpDto: SendOtpDto) {
     const { email } = sendOtpDto;
-
-    const test = await this.prisma.client.user.findUnique({
-      where: { email },
-    })
 
     const user = await this.prisma.client.user.findUnique({
       where: { email },
@@ -126,48 +126,61 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const otp = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.client.userOtp.deleteMany({
+      where: { userId: user.id },
+    });
 
-    this.otpStore.set(email, { otp, expiresAt, attempts: 0 });
+    const otp = OtpUtil.generateOtp();
+    const expiresAt = OtpUtil.getOtpExpiryDate();
 
-    await this.sendOtpEmail(email, otp);
+    await this.prisma.client.userOtp.create({
+      data: {
+        code: otp,
+        type: 'VERIFICATION',
+        userId: user.id,
+        expiresAt,
+      },
+    });
 
-    return { message: 'OTP sent successfully to your email' };
+    const from = this.configService.get<string>('SMTP_FROM') || '';
+    await MailUtil.sendOtpEmail(email, otp, from);
+
+    return ResponseUtil.success(null, 'OTP sent successfully to your email');
   }
 
-  async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{ message: string }> {
+  async verifyOtp(verifyOtpDto: VerifyOtpDto) {
     const { email, otp } = verifyOtpDto;
 
-    const storedOtp = this.otpStore.get(email);
+    const user = await this.prisma.client.user.findUnique({
+      where: { email },
+    });
 
-    if (!storedOtp) {
-      throw new BadRequestException('No OTP found. Please request a new one');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    if (new Date() > storedOtp.expiresAt) {
-      this.otpStore.delete(email);
+    const storedOtp = await this.prisma.client.userOtp.findFirst({
+      where: {
+        userId: user.id,
+        code: otp,
+      },
+    });
+
+    if (!storedOtp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (OtpUtil.isOtpExpired(storedOtp.expiresAt)) {
+      await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
       throw new BadRequestException('OTP has expired. Please request a new one');
     }
 
-    if (storedOtp.attempts >= 3) {
-      this.otpStore.delete(email);
-      throw new BadRequestException('Too many failed attempts. Please request a new OTP');
-    }
+    await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
 
-    if (storedOtp.otp !== otp) {
-      storedOtp.attempts++;
-      throw new BadRequestException(
-        `Invalid OTP. ${3 - storedOtp.attempts} attempts remaining`,
-      );
-    }
-
-    this.otpStore.delete(email);
-
-    return { message: 'OTP verified successfully' };
+    return ResponseUtil.success(null, 'OTP verified successfully');
   }
 
-  async resendOtp(resendOtpDto: ResendOtpDto): Promise<{ message: string }> {
+  async resendOtp(resendOtpDto: ResendOtpDto) {
     const { email } = resendOtpDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -178,20 +191,32 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const otp = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.client.userOtp.deleteMany({
+      where: { userId: user.id },
+    });
 
-    this.otpStore.set(email, { otp, expiresAt, attempts: 0 });
+    const otp = OtpUtil.generateOtp();
+    const expiresAt = OtpUtil.getOtpExpiryDate();
 
-    await this.sendOtpEmail(email, otp);
+    await this.prisma.client.userOtp.create({
+      data: {
+        code: otp,
+        type: 'VERIFICATION',
+        userId: user.id,
+        expiresAt,
+      },
+    });
 
-    return { message: 'OTP resent successfully to your email' };
+    const from = this.configService.get<string>('SMTP_FROM') || '';
+    await MailUtil.sendOtpEmail(email, otp, from);
+
+    return ResponseUtil.success(null, 'OTP resent successfully to your email');
   }
 
   async changePassword(
     userId: string,
     changePasswordDto: ChangePasswordDto,
-  ): Promise<{ message: string }> {
+  ) {
     const { currentPassword, newPassword } = changePasswordDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -202,7 +227,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const isCurrentPasswordValid = await bcrypt.compare(
+    const isCurrentPasswordValid = await CryptoUtil.comparePassword(
       currentPassword,
       user.password,
     );
@@ -211,19 +236,19 @@ export class AuthService {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await CryptoUtil.hashPassword(newPassword);
 
     await this.prisma.client.user.update({
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
 
-    return { message: 'Password changed successfully' };
+    return ResponseUtil.success(null, 'Password changed successfully');
   }
 
   async forgotPassword(
     forgotPasswordDto: ForgotPasswordDto,
-  ): Promise<{ message: string }> {
+  ) {
     const { email } = forgotPasswordDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -234,45 +259,32 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const otp = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.client.userOtp.deleteMany({
+      where: { userId: user.id },
+    });
 
-    this.otpStore.set(email, { otp, expiresAt, attempts: 0 });
+    const otp = OtpUtil.generateOtp();
+    const expiresAt = OtpUtil.getOtpExpiryDate();
 
-    await this.sendOtpEmail(email, otp);
+    await this.prisma.client.userOtp.create({
+      data: {
+        code: otp,
+        type: 'RESET_PASSWORD',
+        userId: user.id,
+        expiresAt,
+      },
+    });
 
-    return { message: 'Password reset OTP sent to your email' };
+    const from = this.configService.get<string>('SMTP_FROM') || '';
+    await MailUtil.sendOtpEmail(email, otp, from);
+
+    return ResponseUtil.success(null, 'Password reset OTP sent to your email');
   }
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
-  ): Promise<{ message: string }> {
+  ) {
     const { email, otp, newPassword } = resetPasswordDto;
-
-    const storedOtp = this.otpStore.get(email);
-
-    if (!storedOtp) {
-      throw new BadRequestException('No OTP found. Please request a new one');
-    }
-
-    if (new Date() > storedOtp.expiresAt) {
-      this.otpStore.delete(email);
-      throw new BadRequestException('OTP has expired. Please request a new one');
-    }
-
-    if (storedOtp.attempts >= 3) {
-      this.otpStore.delete(email);
-      throw new BadRequestException('Too many failed attempts. Please request a new OTP');
-    }
-
-    if (storedOtp.otp !== otp) {
-      storedOtp.attempts++;
-      throw new BadRequestException(
-        `Invalid OTP. ${3 - storedOtp.attempts} attempts remaining`,
-      );
-    }
-
-    this.otpStore.delete(email);
 
     const user = await this.prisma.client.user.findUnique({
       where: { email },
@@ -282,47 +294,49 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const storedOtp = await this.prisma.client.userOtp.findFirst({
+      where: {
+        userId: user.id,
+        code: otp,
+        type: 'RESET_PASSWORD',
+      },
+    });
+
+    if (!storedOtp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (OtpUtil.isOtpExpired(storedOtp.expiresAt)) {
+      await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
+      throw new BadRequestException('OTP has expired. Please request a new one');
+    }
+
+    const hashedPassword = await CryptoUtil.hashPassword(newPassword);
 
     await this.prisma.client.user.update({
       where: { email },
       data: { password: hashedPassword },
     });
 
-    return { message: 'Password reset successfully' };
+    await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
+
+    return ResponseUtil.success(null, 'Password reset successfully');
   }
 
-  generateAccessToken(userId: string, email: string): string {
-    const payload: JwtPayload = { sub: userId, email };
-    return this.jwtService.sign(payload);
-  }
+  async getProfile(userId: string) {
+    const user = await this.prisma.client.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
 
-  private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  private async sendOtpEmail(email: string, otp: string): Promise<void> {
-    const mailOptions = {
-      from: this.configService.get<string>('SMTP_FROM'),
-      to: email,
-      subject: 'Your OTP Code - Smart Appointment Manager',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Smart Appointment Manager</h2>
-          <p>Your OTP code is:</p>
-          <h1 style="background-color: #f4f4f4; padding: 20px; text-align: center; letter-spacing: 5px;">
-            ${otp}
-          </h1>
-          <p>This code will expire in 10 minutes.</p>
-          <p style="color: #666; font-size: 12px;">If you didn't request this code, please ignore this email.</p>
-        </div>
-      `,
-    };
-
-    try {
-      await this.transporter.sendMail(mailOptions);
-    } catch (error) {
-      throw new BadRequestException('Failed to send OTP email');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    return ResponseUtil.success({user}, 'User profile retrieved successfully');
   }
 }

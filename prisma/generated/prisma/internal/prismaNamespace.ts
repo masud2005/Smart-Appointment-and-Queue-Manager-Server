@@ -388,6 +388,7 @@ export const ModelName = {
   Appointment: 'Appointment',
   Service: 'Service',
   Staff: 'Staff',
+  UserOtp: 'UserOtp',
   User: 'User'
 } as const
 
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "activityLog" | "appointment" | "service" | "staff" | "user"
+    modelProps: "activityLog" | "appointment" | "service" | "staff" | "userOtp" | "user"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -704,6 +705,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserOtp: {
+      payload: Prisma.$UserOtpPayload<ExtArgs>
+      fields: Prisma.UserOtpFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserOtpFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserOtpFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        findFirst: {
+          args: Prisma.UserOtpFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserOtpFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        findMany: {
+          args: Prisma.UserOtpFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>[]
+        }
+        create: {
+          args: Prisma.UserOtpCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        createMany: {
+          args: Prisma.UserOtpCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserOtpCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>[]
+        }
+        delete: {
+          args: Prisma.UserOtpDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        update: {
+          args: Prisma.UserOtpUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserOtpDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserOtpUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserOtpUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserOtpUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserOtpPayload>
+        }
+        aggregate: {
+          args: Prisma.UserOtpAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserOtp>
+        }
+        groupBy: {
+          args: Prisma.UserOtpGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserOtpGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserOtpCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserOtpCountAggregateOutputType> | number
+        }
+      }
+    }
     User: {
       payload: Prisma.$UserPayload<ExtArgs>
       fields: Prisma.UserFieldRefs
@@ -874,6 +949,19 @@ export const StaffScalarFieldEnum = {
 export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof StaffScalarFieldEnum]
 
 
+export const UserOtpScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  type: 'type',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserOtpScalarFieldEnum = (typeof UserOtpScalarFieldEnum)[keyof typeof UserOtpScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -1001,6 +1089,20 @@ export type ListEnumStaffAvailabilityStatusFieldRefInput<$PrismaModel> = FieldRe
 
 
 /**
+ * Reference to a field of type 'OtpType'
+ */
+export type EnumOtpTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpType'>
+    
+
+
+/**
+ * Reference to a field of type 'OtpType[]'
+ */
+export type ListEnumOtpTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1112,6 +1214,7 @@ export type GlobalOmitConfig = {
   appointment?: Prisma.AppointmentOmit
   service?: Prisma.ServiceOmit
   staff?: Prisma.StaffOmit
+  userOtp?: Prisma.UserOtpOmit
   user?: Prisma.UserOmit
 }
 

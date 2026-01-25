@@ -55,6 +55,7 @@ export const ModelName = {
   Appointment: 'Appointment',
   Service: 'Service',
   Staff: 'Staff',
+  UserOtp: 'UserOtp',
   User: 'User'
 } as const
 
@@ -129,6 +130,19 @@ export const StaffScalarFieldEnum = {
 } as const
 
 export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof StaffScalarFieldEnum]
+
+
+export const UserOtpScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  type: 'type',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserOtpScalarFieldEnum = (typeof UserOtpScalarFieldEnum)[keyof typeof UserOtpScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {

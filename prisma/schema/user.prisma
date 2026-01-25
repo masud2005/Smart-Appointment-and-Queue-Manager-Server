@@ -10,6 +10,7 @@ model User {
   services     Service[]
   appointments Appointment[]
   activityLogs ActivityLog[]
+  usersOtp     UserOtp[]
 
   @@index([email])
   @@map("users")
