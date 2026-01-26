@@ -7,7 +7,7 @@ async function bootstrap() {
 
   // * Swagger config with Bearer Auth
   const config = new DocumentBuilder()
-    .setTitle('Backend API')
+    .setTitle('Smart Appointment & Queue Manager API')
     .setDescription('The API description')
     .setVersion('1.0')
     .addBearerAuth()
