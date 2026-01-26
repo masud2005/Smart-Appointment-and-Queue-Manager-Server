@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -103,5 +104,18 @@ export class StaffController {
     @Param('id') staffId: string,
   ) {
     return this.staffService.deleteStaff(userId, staffId);
+  }
+
+  @Get('load/with-appointments')
+  @ApiOperation({ summary: 'Get all staff with their daily load' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff with daily load retrieved successfully',
+  })
+  getStaffWithLoad(
+    @GetUser('sub') userId: string,
+    @Query('date') date?: string,
+  ) {
+    return this.staffService.getStaffWithDailyLoad(userId, date);
   }
 }

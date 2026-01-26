@@ -281,6 +281,49 @@ export class AppointmentService {
 		return ResponseUtil.success(appointments, 'Appointments retrieved successfully');
 	}
 
+	async getAppointmentsWithDetails(userId: string, filters: FilterAppointmentsDto) {
+		let dateFilter;
+		if (filters.date) {
+			const date = new Date(filters.date);
+			if (Number.isNaN(date.getTime())) {
+				throw new BadRequestException('Invalid date');
+			}
+			const { start, end } = this.getDayRange(date);
+			dateFilter = { gte: start, lte: end };
+		}
+
+		const appointments = await this.prisma.client.appointment.findMany({
+			where: {
+				userId,
+				...(filters.staffId && { staffId: filters.staffId }),
+				...(filters.status && { status: filters.status }),
+				...(dateFilter && { dateTime: dateFilter }),
+			},
+			orderBy: [{ dateTime: 'asc' }],
+			include: {
+				staff: {
+					select: {
+						id: true,
+						name: true,
+						serviceType: true,
+						dailyCapacity: true,
+						availabilityStatus: true,
+					},
+				},
+				service: {
+					select: {
+						id: true,
+						name: true,
+						durationMinutes: true,
+						staffType: true,
+					},
+				},
+			},
+		});
+
+		return ResponseUtil.success(appointments, 'Appointments with details retrieved successfully');
+	}
+
 	async getAppointmentById(userId: string, id: string) {
 		const appointment = await this.prisma.client.appointment.findFirst({
 			where: { id, userId },
@@ -301,6 +344,37 @@ export class AppointmentService {
 		}
 
 		return ResponseUtil.success(appointment, 'Appointment retrieved successfully');
+	}
+
+	async getAppointmentByIdWithDetails(userId: string, id: string) {
+		const appointment = await this.prisma.client.appointment.findFirst({
+			where: { id, userId },
+			include: {
+				staff: {
+					select: {
+						id: true,
+						name: true,
+						serviceType: true,
+						dailyCapacity: true,
+						availabilityStatus: true,
+					},
+				},
+				service: {
+					select: {
+						id: true,
+						name: true,
+						durationMinutes: true,
+						staffType: true,
+					},
+				},
+			},
+		});
+
+		if (!appointment) {
+			throw new NotFoundException('Appointment not found');
+		}
+
+		return ResponseUtil.success(appointment, 'Appointment with details retrieved successfully');
 	}
 
 	async updateAppointment(
@@ -495,5 +569,83 @@ export class AppointmentService {
 		});
 
 		return ResponseUtil.success(completed, 'Appointment completed successfully');
+	}
+
+	async markNoShow(userId: string, id: string) {
+		const appointment = await this.prisma.client.appointment.findFirst({
+			where: { id, userId },
+		});
+
+		if (!appointment) {
+			throw new NotFoundException('Appointment not found');
+		}
+
+		if (appointment.status !== AppointmentStatus.SCHEDULED) {
+			throw new BadRequestException(
+				'Only scheduled appointments can be marked as no-show',
+			);
+		}
+
+		const noShow = await this.prisma.client.appointment.update({
+			where: { id },
+			data: {
+				status: AppointmentStatus.NO_SHOW,
+			},
+			select: {
+				id: true,
+				customerName: true,
+				dateTime: true,
+				endTime: true,
+				status: true,
+				queuePosition: true,
+				staffId: true,
+				serviceId: true,
+			},
+		});
+
+		return ResponseUtil.success(noShow, 'Appointment marked as no-show successfully');
+	}
+
+	async getAvailableStaffWithLoad(userId: string, serviceId: string, date?: string) {
+		const service = await this.getService(userId, serviceId);
+		const targetDate = date ? new Date(date) : new Date();
+		const { start: dayStart, end: dayEnd } = this.getDayRange(targetDate);
+
+		const staffList = await this.prisma.client.staff.findMany({
+			where: {
+				userId,
+				serviceType: service.staffType,
+				availabilityStatus: 'AVAILABLE',
+			},
+			select: {
+				id: true,
+				name: true,
+				dailyCapacity: true,
+			},
+			orderBy: { name: 'asc' },
+		});
+
+		const staffWithLoad = await Promise.all(
+			staffList.map(async (staff) => {
+				const appointmentCount = await this.prisma.client.appointment.count({
+					where: {
+						staffId: staff.id,
+						status: AppointmentStatus.SCHEDULED,
+						dateTime: { gte: dayStart, lte: dayEnd },
+					},
+				});
+
+				return {
+					id: staff.id,
+					name: staff.name,
+					currentLoad: appointmentCount,
+					dailyCapacity: staff.dailyCapacity,
+					availableSlots: staff.dailyCapacity - appointmentCount,
+					isAtCapacity: appointmentCount >= staff.dailyCapacity,
+				};
+			}),
+		);
+
+		return ResponseUtil.success(staffWithLoad, 'Staff with load retrieved successfully');
 	}
 }

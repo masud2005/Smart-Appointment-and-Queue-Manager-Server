@@ -7,6 +7,18 @@ import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
 export class QueueService {
 	constructor(private prisma: PrismaService) {}
 
+	private getDayRange(date: Date) {
+		const start = new Date(date);
+		start.setUTCHours(0, 0, 0, 0);
+		const end = new Date(date);
+		end.setUTCHours(23, 59, 59, 999);
+		return { start, end };
+	}
+
+	private addMinutes(date: Date, minutes: number) {
+		return new Date(date.getTime() + minutes * 60000);
+	}
+
 	private async reorderQueue(userId: string) {
 		const waiting = await this.prisma.client.appointment.findMany({
 			where: { userId, status: AppointmentStatus.WAITING },
@@ -20,6 +32,54 @@ export class QueueService {
 				data: { queuePosition: i + 1 },
 			});
 		}
+	}
+
+	private async findNextAvailableSlot(
+		staffId: string,
+		userId: string,
+		startFrom: Date,
+		durationMinutes: number,
+		dailyCapacity: number,
+	) {
+		const now = new Date();
+		let candidateStart = startFrom > now ? startFrom : now;
+		const { start: dayStart, end: dayEnd } = this.getDayRange(candidateStart);
+		if (candidateStart < dayStart) {
+			candidateStart = dayStart;
+		}
+
+		const existing = await this.prisma.client.appointment.findMany({
+			where: {
+				staffId,
+				userId,
+				status: AppointmentStatus.SCHEDULED,
+				dateTime: { gte: dayStart, lte: dayEnd },
+			},
+			orderBy: { dateTime: 'asc' },
+			select: { dateTime: true, endTime: true },
+		});
+
+		if (existing.length >= dailyCapacity) {
+			return null;
+		}
+
+		for (const slot of existing) {
+			if (candidateStart >= slot.endTime) {
+				continue;
+			}
+			const candidateEnd = this.addMinutes(candidateStart, durationMinutes);
+			if (candidateEnd <= slot.dateTime) {
+				return { start: candidateStart, end: candidateEnd };
+			}
+			candidateStart = slot.endTime;
+		}
+
+		const candidateEnd = this.addMinutes(candidateStart, durationMinutes);
+		if (candidateEnd > dayEnd) {
+			return null;
+		}
+
+		return { start: candidateStart, end: candidateEnd };
 	}
 
 	private async staffEligibility(
@@ -115,11 +175,17 @@ export class QueueService {
 				id: true,
 				name: true,
 				serviceType: true,
+				dailyCapacity: true,
+				availabilityStatus: true,
 			},
 		});
 
 		if (!staff) {
 			throw new NotFoundException('Staff not found');
+		}
+
+		if (staff.availabilityStatus !== 'AVAILABLE') {
+			throw new ConflictException('Staff is not available');
 		}
 
 		const waiting = await this.prisma.client.appointment.findMany({
@@ -129,39 +195,42 @@ export class QueueService {
 				id: true,
 				customerName: true,
 				dateTime: true,
-				endTime: true,
 				queuePosition: true,
 				serviceId: true,
 			},
 		});
 
 		let assigned = null;
+		let slot: { start: Date; end: Date } | null = null;
 
 		for (const appt of waiting) {
 			const service = await this.prisma.client.service.findFirst({
 				where: { id: appt.serviceId, userId },
-				select: { staffType: true },
+				select: { staffType: true, durationMinutes: true },
 			});
 
-			if (!service) {
+			if (!service || service.staffType !== staff.serviceType) {
 				continue;
 			}
 
-			const eligibility = await this.staffEligibility(
-				staffId,
+			const nextSlot = await this.findNextAvailableSlot(
+				staff.id,
 				userId,
-				service.staffType,
-				appt.dateTime,
-				appt.endTime,
+				new Date(appt.dateTime),
+				service.durationMinutes,
+				staff.dailyCapacity,
 			);
 
-			if (eligibility.ok) {
-				assigned = appt;
-				break;
+			if (!nextSlot) {
+				continue;
 			}
+
+			assigned = appt;
+			slot = nextSlot;
+			break;
 		}
 
-		if (!assigned) {
+		if (!assigned || !slot) {
 			throw new ConflictException('No eligible waiting appointment for this staff');
 		}
 
@@ -171,6 +240,8 @@ export class QueueService {
 				status: AppointmentStatus.SCHEDULED,
 				staffId,
 				queuePosition: null,
+				dateTime: slot.start,
+				endTime: slot.end,
 			},
 			select: {
 				id: true,
@@ -184,6 +255,16 @@ export class QueueService {
 		});
 
 		await this.reorderQueue(userId);
+
+		await this.prisma.client.activityLog.create({
+			data: {
+				action: 'QUEUE_ASSIGNED',
+				message: `Appointment for "${assigned.customerName}" auto-assigned to ${staff.name}.`,
+				userId,
+				appointmentId: assigned.id,
+				staffId,
+			},
+		});
 
 		return ResponseUtil.success(updated, 'Assigned earliest eligible appointment');
 	}

@@ -50,11 +50,28 @@ export class AppointmentController {
 		return this.appointmentService.getAppointments(userId, filters);
 	}
 
+	@Get('list/with-details')
+	@ApiOperation({ summary: 'List appointments with staff and service details' })
+	@ApiResponse({ status: 200, description: 'Appointments with details retrieved' })
+	findAllWithDetails(
+		@GetUser('sub') userId: string,
+		@Query() filters: FilterAppointmentsDto,
+	) {
+		return this.appointmentService.getAppointmentsWithDetails(userId, filters);
+	}
+
 	@Get(':id')
 	@ApiOperation({ summary: 'Get appointment by id' })
 	@ApiResponse({ status: 200, description: 'Appointment retrieved' })
 	findOne(@GetUser('sub') userId: string, @Param('id') id: string) {
 		return this.appointmentService.getAppointmentById(userId, id);
+	}
+
+	@Get(':id/details')
+	@ApiOperation({ summary: 'Get appointment with staff and service details' })
+	@ApiResponse({ status: 200, description: 'Appointment details retrieved' })
+	findOneWithDetails(@GetUser('sub') userId: string, @Param('id') id: string) {
+		return this.appointmentService.getAppointmentByIdWithDetails(userId, id);
 	}
 
 	@Patch(':id')
@@ -81,5 +98,24 @@ export class AppointmentController {
 	@ApiResponse({ status: 400, description: 'Only scheduled appointments can be completed' })
 	complete(@GetUser('sub') userId: string, @Param('id') id: string) {
 		return this.appointmentService.completeAppointment(userId, id);
+	}
+
+	@Patch(':id/no-show')
+	@ApiOperation({ summary: 'Mark appointment as no-show' })
+	@ApiResponse({ status: 200, description: 'Appointment marked as no-show' })
+	@ApiResponse({ status: 400, description: 'Only scheduled appointments can be marked as no-show' })
+	noShow(@GetUser('sub') userId: string, @Param('id') id: string) {
+		return this.appointmentService.markNoShow(userId, id);
+	}
+
+	@Get('available-staff/:serviceId')
+	@ApiOperation({ summary: 'Get available staff with appointment load' })
+	@ApiResponse({ status: 200, description: 'Available staff retrieved' })
+	getAvailableStaff(
+		@GetUser('sub') userId: string,
+		@Param('serviceId') serviceId: string,
+		@Query('date') date?: string,
+	) {
+		return this.appointmentService.getAvailableStaffWithLoad(userId, serviceId, date);
 	}
 }
