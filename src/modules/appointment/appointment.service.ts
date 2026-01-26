@@ -104,6 +104,7 @@ export class AppointmentService {
 			},
 		});
 
+
 		if (conflict) {
 			return {
 				ok: false,
