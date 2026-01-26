@@ -8,6 +8,8 @@ import { StaffModule } from './modules/staff/staff.module';
 import { ServiceModule } from './modules/service/service.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { QueueModule } from './modules/queue/queue.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ActivityModule } from './modules/activity/activity.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -18,7 +20,9 @@ import { QueueModule } from './modules/queue/queue.module';
     StaffModule,
     ServiceModule,
     AppointmentModule,
-    QueueModule
+    QueueModule,
+    DashboardModule,
+    ActivityModule
   ],
   controllers: [AppController],
   providers: [AppService],
