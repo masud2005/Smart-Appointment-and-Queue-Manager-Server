@@ -17,25 +17,60 @@ export class MailUtil {
     });
   }
 
-  static async sendOtpEmail(
-    to: string,
-    otp: string,
-    from: string,
-  ): Promise<void> {
+  static async sendOtpEmail(to: string, otp: string, from: string): Promise<void> {
     const mailOptions = {
       from,
       to,
-      subject: 'Your OTP Code - Smart Appointment Manager',
+      subject: 'Your Verification Code - Smart Appointment & Queue Manager',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Smart Appointment Manager</h2>
-          <p>Your OTP code is:</p>
-          <h1 style="background-color: #f4f4f4; padding: 20px; text-align: center; letter-spacing: 5px;">
-            ${otp}
-          </h1>
-          <p>This code will expire in 10 minutes.</p>
-          <p style="color: #666; font-size: 12px;">If you didn't request this code, please ignore this email.</p>
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verification Code</title>
+        </head>
+        <body style="margin:0; padding:0; background:#f6f9fc; font-family:Arial,Helvetica,sans-serif; color:#333;">
+          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td align="center" style="padding:40px 20px;">
+                <table role="presentation" width="100%" style="max-width:520px; background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e0e4e8;">
+                  <tr>
+                    <td style="background:#4f46e5; padding:32px 24px; text-align:center; color:white;">
+                      <h1 style="margin:0; font-size:24px; font-weight:600;">Verification Code</h1>
+                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Appointment & Queue Manager</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:40px 32px; text-align:center;">
+                      <p style="margin:0 0 24px; font-size:16px; line-height:1.5;">Hello,</p>
+                      <p style="margin:0 0 32px; font-size:15px; color:#555;">Use the code below to verify your account:</p>
+                      
+                      <div style="font-size:36px; font-weight:bold; letter-spacing:8px; color:#4f46e5; background:#f8f9fa; padding:20px; border-radius:8px; margin:0 auto 32px; max-width:240px;">
+                        ${otp}
+                      </div>
+                      
+                      <p style="margin:0 0 24px; font-size:14px; color:#666;">
+                        This code will expire in <strong>10 minutes</strong>.
+                      </p>
+                      
+                      <p style="margin:0; font-size:13px; color:#777;">
+                        If you didn't request this code, please ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="background:#f8f9fa; padding:24px; text-align:center; font-size:13px; color:#666; border-top:1px solid #e0e4e8;">
+                      Smart Appointment & Queue Manager Team<br>
+                      © ${new Date().getFullYear()} All rights reserved.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `,
     };
 
@@ -46,22 +81,70 @@ export class MailUtil {
     }
   }
 
-  static async sendWelcomeEmail(
-    to: string,
-    name: string,
-    from: string,
-  ): Promise<void> {
+  static async sendWelcomeEmail(to: string, name: string, from: string): Promise<void> {
     const mailOptions = {
       from,
       to,
-      subject: 'Welcome to Smart Appointment Manager',
+      subject: 'Welcome to Smart Appointment & Queue Manager!',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Welcome ${name}!</h2>
-          <p>Thank you for registering with Smart Appointment Manager.</p>
-          <p>We're excited to have you on board.</p>
-          <p style="color: #666; font-size: 12px;">If you didn't create this account, please contact us immediately.</p>
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Welcome</title>
+        </head>
+        <body style="margin:0; padding:0; background:#f6f9fc; font-family:Arial,Helvetica,sans-serif; color:#333;">
+          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td align="center" style="padding:40px 20px;">
+                <table role="presentation" width="100%" style="max-width:520px; background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e0e4e8;">
+                  <tr>
+                    <td style="background:#4f46e5; padding:32px 24px; text-align:center; color:white;">
+                      <h1 style="margin:0; font-size:26px; font-weight:600;">Welcome aboard!</h1>
+                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Appointment & Queue Manager</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:40px 32px;">
+                      <p style="margin:0 0 20px; font-size:18px; font-weight:600;">Hi ${name},</p>
+                      <p style="margin:0 0 28px; font-size:15px; line-height:1.6; color:#555;">
+                        Thank you for joining Smart Appointment & Queue Manager.<br>
+                        We're excited to have you with us!
+                      </p>
+
+                      <div style="background:#f8f9fa; padding:24px; border-radius:8px; margin:0 0 32px;">
+                        <p style="margin:0 0 16px; font-weight:600; color:#444;">What you can do now:</p>
+                        <ul style="margin:0; padding-left:20px; font-size:14px; line-height:1.8; color:#555;">
+                          <li>Book appointments quickly</li>
+                          <li>Join & manage queues</li>
+                          <li>Get real-time updates</li>
+                        </ul>
+                      </div>
+
+                      <div style="text-align:center; margin:0 0 32px;">
+                        <a href="#" style="display:inline-block; background:#4f46e5; color:white; text-decoration:none; padding:14px 36px; border-radius:6px; font-weight:600; font-size:15px;">
+                          Get Started
+                        </a>
+                      </div>
+
+                      <p style="margin:0; font-size:14px; color:#666; text-align:center;">
+                        Need help? Contact support anytime.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="background:#f8f9fa; padding:24px; text-align:center; font-size:13px; color:#666; border-top:1px solid #e0e4e8;">
+                      Smart Appointment & Queue Manager Team<br>
+                      © ${new Date().getFullYear()} All rights reserved.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `,
     };
 
@@ -78,12 +161,7 @@ export class MailUtil {
     html: string,
     from: string,
   ): Promise<void> {
-    const mailOptions = {
-      from,
-      to,
-      subject,
-      html,
-    };
+    const mailOptions = { from, to, subject, html };
 
     try {
       await this.transporter.sendMail(mailOptions);

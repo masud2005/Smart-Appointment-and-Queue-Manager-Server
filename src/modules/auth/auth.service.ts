@@ -49,31 +49,36 @@ export class AuthService {
         email,
         password: hashedPassword,
         name,
+        isVerified: false,
       },
       select: {
         id: true,
         email: true,
         name: true,
+        isVerified: true,
       },
     });
 
-    const responseData: any = {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+    await this.prisma.client.userOtp.deleteMany({
+      where: { userId: user.id },
+    });
+
+    const otp = OtpUtil.generateOtp();
+    const expiresAt = OtpUtil.getOtpExpiryDate();
+
+    await this.prisma.client.userOtp.create({
+      data: {
+        code: otp,
+        type: 'VERIFICATION',
+        userId: user.id,
+        expiresAt,
       },
-    };
+    });
 
-    if (this.configService.get<string>('NODE_ENV') === 'development') {
-      responseData.token = JwtUtil.generateAccessToken(
-        this.jwtService,
-        user.id,
-        user.email,
-      );
-    }
+    const from = this.configService.get<string>('SMTP_FROM') || '';
+    await MailUtil.sendOtpEmail(email, otp, from);
 
-    return ResponseUtil.created(responseData, 'User registered successfully');
+    return ResponseUtil.created(user, 'User registered successfully. Check your email for verification code.');
   }
 
   async login(loginDto: LoginDto) {
@@ -87,6 +92,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Please verify your email first. Check your inbox for the verification code.');
+    }
+
     const isPasswordValid = await CryptoUtil.comparePassword(
       password,
       user.password,
@@ -96,13 +105,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const responseData: any = {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    };
+    const responseData: any = user;
 
     if (this.configService.get<string>('NODE_ENV') === 'development') {
       responseData.token = JwtUtil.generateAccessToken(
@@ -175,9 +178,24 @@ export class AuthService {
       throw new BadRequestException('OTP has expired. Please request a new one');
     }
 
+    if (storedOtp.type === 'VERIFICATION') {
+      await this.prisma.client.user.update({
+        where: { id: user.id },
+        data: { isVerified: true },
+      });
+    }
+
     await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
 
-    return ResponseUtil.success(null, 'OTP verified successfully');
+    const token = JwtUtil.generateAccessToken(
+      this.jwtService,
+      user.id,
+      user.email,
+    );
+
+    const userResponse = {...user, token}
+
+    return ResponseUtil.success(userResponse, 'OTP verified successfully');
   }
 
   async resendOtp(resendOtpDto: ResendOtpDto) {
@@ -191,6 +209,12 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    const existingOtp = await this.prisma.client.userOtp.findFirst({
+      where: { userId: user.id },
+    });
+
+    const otpType = existingOtp?.type || 'VERIFICATION';
+
     await this.prisma.client.userOtp.deleteMany({
       where: { userId: user.id },
     });
@@ -201,7 +225,7 @@ export class AuthService {
     await this.prisma.client.userOtp.create({
       data: {
         code: otp,
-        type: 'VERIFICATION',
+        type: otpType,
         userId: user.id,
         expiresAt,
       },
@@ -323,20 +347,4 @@ export class AuthService {
     return ResponseUtil.success(null, 'Password reset successfully');
   }
 
-  async getProfile(userId: string) {
-    const user = await this.prisma.client.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return ResponseUtil.success({user}, 'User profile retrieved successfully');
-  }
 }

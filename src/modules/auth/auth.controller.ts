@@ -136,14 +136,5 @@ export class AuthController {
     return ResponseUtil.success(null, 'Logout successful');
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Get('me')
-  async getProfile(@GetUser() user: any) {
-    return this.authService.getProfile(user.id);
-  }
 }
 

@@ -10,6 +10,7 @@ import { AppointmentModule } from './modules/appointment/appointment.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ActivityModule } from './modules/activity/activity.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -17,6 +18,7 @@ import { ActivityModule } from './modules/activity/activity.module';
   }),
     PrismaModule,
     AuthModule,
+    ProfileModule,
     StaffModule,
     ServiceModule,
     AppointmentModule,
