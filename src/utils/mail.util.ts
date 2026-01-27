@@ -10,13 +10,18 @@ export class MailUtil {
       host: config.host,
       port: config.port,
       secure: config.secure,
+      requireTLS: config.requireTLS || true,
       auth: {
         user: config.auth.user,
         pass: config.auth.pass,
       },
       tls: {
         rejectUnauthorized: false,
+        minVersion: 'TLSv1.2',
       },
+      connectionTimeout: config.connectionTimeout || 30000,
+      greetingTimeout: config.greetingTimeout || 30000,
+      socketTimeout: config.socketTimeout || 30000,
     });
   }
 

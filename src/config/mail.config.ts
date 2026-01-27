@@ -7,6 +7,10 @@ export interface MailConfig {
     pass: string;
   };
   from: string;
+  requireTLS?: boolean;
+  connectionTimeout?: number;
+  greetingTimeout?: number;
+  socketTimeout?: number;
 }
 
 export const getMailConfig = () => {
@@ -14,16 +18,14 @@ export const getMailConfig = () => {
     host: process.env.SMTP_HOST as string,
     port: Number(process.env.SMTP_PORT),
     secure: false,
+    requireTLS: true,
     auth: {
       user: process.env.SMTP_USER as string,
       pass: process.env.SMTP_PASS as string,
     },
     from: process.env.SMTP_FROM as string,
-    tls: {
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
   };
 };
