@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { ResponseUtil, CryptoUtil } from '@/utils';
+import { ResponseUtil } from '@/utils';
 
 @Injectable()
 export class ProfileService {
@@ -69,4 +69,3 @@ export class ProfileService {
     return ResponseUtil.success(null, 'Profile deleted successfully');
   }
 }
-

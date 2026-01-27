@@ -13,9 +13,10 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-  }),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PrismaModule,
     AuthModule,
     ProfileModule,
@@ -24,9 +25,9 @@ import { ProfileModule } from './modules/profile/profile.module';
     AppointmentModule,
     QueueModule,
     DashboardModule,
-    ActivityModule
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

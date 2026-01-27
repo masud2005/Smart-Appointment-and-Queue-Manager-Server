@@ -8,7 +8,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { getMailConfig } from '../../config/mail.config';
-import { CryptoUtil, JwtUtil, MailUtil, OtpUtil, ResponseUtil } from '../../utils';
+import {
+  CryptoUtil,
+  JwtUtil,
+  MailUtil,
+  OtpUtil,
+  ResponseUtil,
+} from '../../utils';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -78,7 +84,10 @@ export class AuthService {
     const from = this.configService.get<string>('SMTP_FROM') || '';
     await MailUtil.sendOtpEmail(email, otp, from);
 
-    return ResponseUtil.created(user, 'User registered successfully. Check your email for verification code.');
+    return ResponseUtil.created(
+      user,
+      'User registered successfully. Check your email for verification code.',
+    );
   }
 
   async login(loginDto: LoginDto) {
@@ -93,7 +102,9 @@ export class AuthService {
     }
 
     if (!user.isVerified) {
-      throw new UnauthorizedException('Please verify your email first. Check your inbox for the verification code.');
+      throw new UnauthorizedException(
+        'Please verify your email first. Check your inbox for the verification code.',
+      );
     }
 
     const isPasswordValid = await CryptoUtil.comparePassword(
@@ -175,7 +186,9 @@ export class AuthService {
 
     if (OtpUtil.isOtpExpired(storedOtp.expiresAt)) {
       await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
-      throw new BadRequestException('OTP has expired. Please request a new one');
+      throw new BadRequestException(
+        'OTP has expired. Please request a new one',
+      );
     }
 
     if (storedOtp.type === 'VERIFICATION') {
@@ -193,7 +206,7 @@ export class AuthService {
       user.email,
     );
 
-    const userResponse = {...user, token}
+    const userResponse = { ...user, token };
 
     return ResponseUtil.success(userResponse, 'OTP verified successfully');
   }
@@ -237,10 +250,7 @@ export class AuthService {
     return ResponseUtil.success(null, 'OTP resent successfully to your email');
   }
 
-  async changePassword(
-    userId: string,
-    changePasswordDto: ChangePasswordDto,
-  ) {
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const { currentPassword, newPassword } = changePasswordDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -270,9 +280,7 @@ export class AuthService {
     return ResponseUtil.success(null, 'Password changed successfully');
   }
 
-  async forgotPassword(
-    forgotPasswordDto: ForgotPasswordDto,
-  ) {
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -305,9 +313,7 @@ export class AuthService {
     return ResponseUtil.success(null, 'Password reset OTP sent to your email');
   }
 
-  async resetPassword(
-    resetPasswordDto: ResetPasswordDto,
-  ) {
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const { email, otp, newPassword } = resetPasswordDto;
 
     const user = await this.prisma.client.user.findUnique({
@@ -332,7 +338,9 @@ export class AuthService {
 
     if (OtpUtil.isOtpExpired(storedOtp.expiresAt)) {
       await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
-      throw new BadRequestException('OTP has expired. Please request a new one');
+      throw new BadRequestException(
+        'OTP has expired. Please request a new one',
+      );
     }
 
     const hashedPassword = await CryptoUtil.hashPassword(newPassword);
@@ -346,5 +354,4 @@ export class AuthService {
 
     return ResponseUtil.success(null, 'Password reset successfully');
   }
-
 }

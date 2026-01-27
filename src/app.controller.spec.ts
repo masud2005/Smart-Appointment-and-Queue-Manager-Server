@@ -16,7 +16,9 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Smart Appointment & Queue Manager API Server Running..."', () => {
-      expect(appController.getHello()).toBe('Smart Appointment & Queue Manager API Server Running...');
+      expect(appController.getHello()).toBe(
+        'Smart Appointment & Queue Manager API Server Running...',
+      );
     });
   });
 });

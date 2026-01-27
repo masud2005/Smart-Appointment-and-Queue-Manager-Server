@@ -1,9 +1,8 @@
-
 import {
-    Injectable,
-    Logger,
-    OnModuleDestroy,
-    OnModuleInit,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma';
@@ -11,36 +10,36 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
-    private readonly logger = new Logger(PrismaService.name);
-    private readonly prisma: PrismaClient;
-    private readonly connectionString: string;
+  private readonly logger = new Logger(PrismaService.name);
+  private readonly prisma: PrismaClient;
+  private readonly connectionString: string;
 
-    constructor(private readonly configService: ConfigService) {
-        this.connectionString =
-            this.configService.getOrThrow<string>('DATABASE_URL');
+  constructor(private readonly configService: ConfigService) {
+    this.connectionString =
+      this.configService.getOrThrow<string>('DATABASE_URL');
 
-        const adapter = new PrismaPg({ connectionString: this.connectionString });
+    const adapter = new PrismaPg({ connectionString: this.connectionString });
 
-        this.prisma = new PrismaClient({
-            adapter,
-            log: [{ emit: 'event', level: 'error' }],
-        });
-    }
+    this.prisma = new PrismaClient({
+      adapter,
+      log: [{ emit: 'event', level: 'error' }],
+    });
+  }
 
-    async onModuleInit() {
-        this.logger.log('[INIT] Prisma connecting...');
-        await this.prisma.$connect();
-        this.logger.log('[INIT] Prisma connected');
-    }
+  async onModuleInit() {
+    this.logger.log('[INIT] Prisma connecting...');
+    await this.prisma.$connect();
+    this.logger.log('[INIT] Prisma connected');
+  }
 
-    async onModuleDestroy() {
-        this.logger.log('[DESTROY] Prisma disconnecting...');
-        await this.prisma.$disconnect();
-        this.logger.log('[DESTROY] Prisma disconnected');
-    }
+  async onModuleDestroy() {
+    this.logger.log('[DESTROY] Prisma disconnecting...');
+    await this.prisma.$disconnect();
+    this.logger.log('[DESTROY] Prisma disconnected');
+  }
 
-    /** Expose Prisma models (like prisma.user, prisma.post, etc.) */
-    get client() {
-        return this.prisma;
-    }
+  /** Expose Prisma models (like prisma.user, prisma.post, etc.) */
+  get client() {
+    return this.prisma;
+  }
 }

@@ -52,10 +52,7 @@ export class StaffService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return ResponseUtil.success(
-      staffList,
-      'Staff list retrieved successfully',
-    );
+    return ResponseUtil.success(staffList, 'Staff list retrieved successfully');
   }
 
   async getStaffById(userId: string, staffId: string) {
@@ -100,9 +97,12 @@ export class StaffService {
 
     const dataToUpdate: any = {};
     if (updateStaffDto.name) dataToUpdate.name = updateStaffDto.name;
-    if (updateStaffDto.serviceType) dataToUpdate.serviceType = updateStaffDto.serviceType;
-    if (updateStaffDto.dailyCapacity) dataToUpdate.dailyCapacity = updateStaffDto.dailyCapacity;
-    if (updateStaffDto.availabilityStatus) dataToUpdate.availabilityStatus = updateStaffDto.availabilityStatus;
+    if (updateStaffDto.serviceType)
+      dataToUpdate.serviceType = updateStaffDto.serviceType;
+    if (updateStaffDto.dailyCapacity)
+      dataToUpdate.dailyCapacity = updateStaffDto.dailyCapacity;
+    if (updateStaffDto.availabilityStatus)
+      dataToUpdate.availabilityStatus = updateStaffDto.availabilityStatus;
 
     const updatedStaff = await this.prisma.client.staff.update({
       where: { id: staffId },

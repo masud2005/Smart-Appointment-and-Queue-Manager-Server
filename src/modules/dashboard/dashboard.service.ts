@@ -16,7 +16,9 @@ export class DashboardService {
     return { start, end };
   }
 
-  private getDateRangeFilter(range: DateRangeFilter): { start?: Date; end?: Date } | undefined {
+  private getDateRangeFilter(
+    range: DateRangeFilter,
+  ): { start?: Date; end?: Date } | undefined {
     const now = new Date();
 
     switch (range) {
@@ -65,27 +67,36 @@ export class DashboardService {
     }
   }
 
-  async getDashboardSummary(userId: string, range: DateRangeFilter = DateRangeFilter.ALL) {
+  async getDashboardSummary(
+    userId: string,
+    range: DateRangeFilter = DateRangeFilter.ALL,
+  ) {
     const rangeFilter = this.getDateRangeFilter(range);
 
     const baseWhere = {
       userId,
-      ...(rangeFilter ? { dateTime: { gte: rangeFilter.start, lte: rangeFilter.end } } : {}),
+      ...(rangeFilter
+        ? { dateTime: { gte: rangeFilter.start, lte: rangeFilter.end } }
+        : {}),
     };
 
-    const [totalAppointments, completedAppointments, scheduledAppointments, waitingCount] =
-      await Promise.all([
-        this.prisma.client.appointment.count({ where: baseWhere }),
-        this.prisma.client.appointment.count({
-          where: { ...baseWhere, status: AppointmentStatus.COMPLETED },
-        }),
-        this.prisma.client.appointment.count({
-          where: { ...baseWhere, status: AppointmentStatus.SCHEDULED },
-        }),
-        this.prisma.client.appointment.count({
-          where: { userId, status: AppointmentStatus.WAITING },
-        }),
-      ]);
+    const [
+      totalAppointments,
+      completedAppointments,
+      scheduledAppointments,
+      waitingCount,
+    ] = await Promise.all([
+      this.prisma.client.appointment.count({ where: baseWhere }),
+      this.prisma.client.appointment.count({
+        where: { ...baseWhere, status: AppointmentStatus.COMPLETED },
+      }),
+      this.prisma.client.appointment.count({
+        where: { ...baseWhere, status: AppointmentStatus.SCHEDULED },
+      }),
+      this.prisma.client.appointment.count({
+        where: { userId, status: AppointmentStatus.WAITING },
+      }),
+    ]);
 
     const summary = {
       totalAppointments: totalAppointments,
@@ -99,7 +110,10 @@ export class DashboardService {
     return ResponseUtil.success(summary, 'Dashboard summary retrieved');
   }
 
-  async getStaffLoadSummary(userId: string, range: DateRangeFilter = DateRangeFilter.ALL) {
+  async getStaffLoadSummary(
+    userId: string,
+    range: DateRangeFilter = DateRangeFilter.ALL,
+  ) {
     const rangeFilter = this.getDateRangeFilter(range);
 
     const staff = await this.prisma.client.staff.findMany({
@@ -119,7 +133,9 @@ export class DashboardService {
           where: {
             staffId: s.id,
             status: AppointmentStatus.SCHEDULED,
-            ...(rangeFilter ? { dateTime: { gte: rangeFilter.start, lte: rangeFilter.end } } : {}),
+            ...(rangeFilter
+              ? { dateTime: { gte: rangeFilter.start, lte: rangeFilter.end } }
+              : {}),
           },
         });
 
@@ -150,7 +166,9 @@ export class DashboardService {
     const logs = await this.prisma.client.activityLog.findMany({
       where: {
         userId,
-        ...(rangeFilter ? { createdAt: { gte: rangeFilter.start, lte: rangeFilter.end } } : {}),
+        ...(rangeFilter
+          ? { createdAt: { gte: rangeFilter.start, lte: rangeFilter.end } }
+          : {}),
       },
       select: {
         id: true,
@@ -171,6 +189,9 @@ export class DashboardService {
       message: log.message,
     }));
 
-    return ResponseUtil.success(formattedLogs, 'Activity logs retrieved successfully');
+    return ResponseUtil.success(
+      formattedLogs,
+      'Activity logs retrieved successfully',
+    );
   }
 }

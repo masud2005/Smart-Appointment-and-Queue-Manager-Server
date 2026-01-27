@@ -4,14 +4,18 @@ import { ResponseUtil } from '@/utils';
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -28,7 +32,7 @@ import {
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
@@ -103,7 +107,10 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Request password reset OTP' })
-  @ApiResponse({ status: 200, description: 'Password reset OTP sent successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset OTP sent successfully',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
@@ -126,7 +133,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Res({ passthrough: true }) response: Response) {
+  logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -135,5 +142,4 @@ export class AuthController {
 
     return ResponseUtil.success(null, 'Logout successful');
   }
-
 }

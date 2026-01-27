@@ -66,9 +66,7 @@ export class ResponseUtil {
     return this.error(message, HttpStatus.BAD_REQUEST, errors);
   }
 
-  static unauthorized(
-    message: string = 'Unauthorized access',
-  ): ApiResponse {
+  static unauthorized(message: string = 'Unauthorized access'): ApiResponse {
     return this.error(message, HttpStatus.UNAUTHORIZED);
   }
 
@@ -92,7 +90,7 @@ export class ResponseUtil {
     message: string = 'Data retrieved successfully',
   ): PaginatedResponse<T> {
     const totalPages = Math.ceil(total / limit);
-    
+
     return {
       success: true,
       statusCode: HttpStatus.OK,

@@ -1,11 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ResponseUtil } from '../../utils';
 import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
 
 @Injectable()
 export class QueueService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   private getDayRange(date: Date) {
     const start = new Date(date);
@@ -166,13 +170,16 @@ export class QueueService {
           select: {
             name: true,
             durationMinutes: true,
-            staffType: true
-          }
-        }
+            staffType: true,
+          },
+        },
       },
     });
 
-    return ResponseUtil.success(waiting, 'Waiting queue retrieved successfully');
+    return ResponseUtil.success(
+      waiting,
+      'Waiting queue retrieved successfully',
+    );
   }
 
   async assignFromQueue(userId: string, staffId: string) {
@@ -238,7 +245,9 @@ export class QueueService {
     }
 
     if (!assigned || !slot) {
-      throw new ConflictException('No eligible waiting appointment for this staff');
+      throw new ConflictException(
+        'No eligible waiting appointment for this staff',
+      );
     }
 
     const updated = await this.prisma.client.appointment.update({
@@ -273,6 +282,9 @@ export class QueueService {
       },
     });
 
-    return ResponseUtil.success(updated, 'Assigned earliest eligible appointment');
+    return ResponseUtil.success(
+      updated,
+      'Assigned earliest eligible appointment',
+    );
   }
 }

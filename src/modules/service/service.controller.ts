@@ -86,7 +86,11 @@ export class ServiceController {
     @Param('id') serviceId: string,
     @Body() updateServiceDto: UpdateServiceDto,
   ) {
-    return this.serviceService.updateService(userId, serviceId, updateServiceDto);
+    return this.serviceService.updateService(
+      userId,
+      serviceId,
+      updateServiceDto,
+    );
   }
 
   @Delete(':id')

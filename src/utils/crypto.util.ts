@@ -7,7 +7,10 @@ export class CryptoUtil {
     return bcrypt.hash(password, this.SALT_ROUNDS);
   }
 
-  static async comparePassword(password: string, hash: string): Promise<boolean> {
+  static async comparePassword(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
 }

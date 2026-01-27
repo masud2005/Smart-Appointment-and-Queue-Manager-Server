@@ -1,5 +1,11 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { DateRangeFilter } from '@/common/enums/date-range-filter.enum';
@@ -63,6 +69,10 @@ export class DashboardController {
     @Query('range') range: DateRangeFilter = DateRangeFilter.ALL,
     @Query('limit') limit: string = '10',
   ) {
-    return this.dashboardService.getRecentActivityLogs(userId, range, parseInt(limit));
+    return this.dashboardService.getRecentActivityLogs(
+      userId,
+      range,
+      parseInt(limit),
+    );
   }
 }

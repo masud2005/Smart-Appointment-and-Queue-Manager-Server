@@ -26,7 +26,11 @@ export class MailUtil {
     });
   }
 
-  static async sendOtpEmail(to: string, otp: string, from: string): Promise<void> {
+  static async sendOtpEmail(
+    to: string,
+    otp: string,
+    from: string,
+  ): Promise<void> {
     const mailOptions = {
       from,
       to,
@@ -91,7 +95,11 @@ export class MailUtil {
     }
   }
 
-  static async sendWelcomeEmail(to: string, name: string, from: string): Promise<void> {
+  static async sendWelcomeEmail(
+    to: string,
+    name: string,
+    from: string,
+  ): Promise<void> {
     const mailOptions = {
       from,
       to,
@@ -175,7 +183,7 @@ export class MailUtil {
 
     try {
       await this.transporter.sendMail(mailOptions);
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to send email');
     }
   }

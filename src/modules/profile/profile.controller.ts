@@ -1,18 +1,23 @@
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Patch,
-    Res,
-    UseGuards
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto';
 
@@ -62,4 +67,3 @@ export class ProfileController {
     return this.profileService.deleteProfile(user.id);
   }
 }
-

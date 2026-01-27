@@ -3,7 +3,11 @@ import { AppointmentStatus } from '../../../common/enums/appointment-status.enum
 import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 
 export class FilterAppointmentsDto {
-  @ApiProperty({ example: '2026-01-26', required: false, description: 'Filter by date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2026-01-26',
+    required: false,
+    description: 'Filter by date (YYYY-MM-DD)',
+  })
   @IsOptional()
   @IsDateString()
   date?: string;

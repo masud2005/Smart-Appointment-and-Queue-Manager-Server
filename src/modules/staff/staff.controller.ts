@@ -64,10 +64,7 @@ export class StaffController {
     status: 404,
     description: 'Staff not found',
   })
-  getStaffById(
-    @GetUser('sub') userId: string,
-    @Param('id') staffId: string,
-  ) {
+  getStaffById(@GetUser('sub') userId: string, @Param('id') staffId: string) {
     return this.staffService.getStaffById(userId, staffId);
   }
 
@@ -99,10 +96,7 @@ export class StaffController {
     status: 404,
     description: 'Staff not found',
   })
-  deleteStaff(
-    @GetUser('sub') userId: string,
-    @Param('id') staffId: string,
-  ) {
+  deleteStaff(@GetUser('sub') userId: string, @Param('id') staffId: string) {
     return this.staffService.deleteStaff(userId, staffId);
   }
 
