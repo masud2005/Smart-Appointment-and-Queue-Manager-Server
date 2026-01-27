@@ -80,6 +80,7 @@ export class MailUtil {
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
+      console.error('Email sending error:', error);
       throw new BadRequestException('Failed to send OTP email');
     }
   }
