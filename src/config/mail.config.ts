@@ -9,15 +9,21 @@ export interface MailConfig {
   from: string;
 }
 
-export const getMailConfig = (): MailConfig => {
+export const getMailConfig = () => {
   return {
     host: process.env.SMTP_HOST as string,
-    port: parseInt(process.env.SMTP_PORT as string, 10),
-    secure: process.env.SMTP_SECURE === 'true',
+    port: Number(process.env.SMTP_PORT),
+    secure: false,
     auth: {
       user: process.env.SMTP_USER as string,
       pass: process.env.SMTP_PASS as string,
     },
     from: process.env.SMTP_FROM as string,
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   };
 };
