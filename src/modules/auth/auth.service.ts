@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { getMailConfig } from '../../config/mail.config';
-import { CryptoUtil, JwtUtil, MailResendUtil, MailUtil, OtpUtil, ResponseUtil } from '../../utils';
+import { CryptoUtil, JwtUtil, MailUtil, OtpUtil, ResponseUtil } from '../../utils';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -23,8 +23,6 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  private useResend = false;
-
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -32,12 +30,6 @@ export class AuthService {
   ) {
     const mailConfig = getMailConfig();
     MailUtil.initialize(mailConfig);
-
-    const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
-    if (resendApiKey) {
-      MailResendUtil.initialize(resendApiKey);
-      this.useResend = true;
-    }
   }
 
   async register(registerDto: RegisterDto) {
@@ -84,7 +76,7 @@ export class AuthService {
     });
 
     const from = this.configService.get<string>('SMTP_FROM') || '';
-    await this.sendOtpWithProvider(email, otp, from);
+    await MailUtil.sendOtpEmail(email, otp, from);
 
     return ResponseUtil.created(user, 'User registered successfully. Check your email for verification code.');
   }
@@ -154,7 +146,7 @@ export class AuthService {
     });
 
     const from = this.configService.get<string>('SMTP_FROM') || '';
-    await this.sendOtpWithProvider(email, otp, from);
+    await MailUtil.sendOtpEmail(email, otp, from);
 
     return ResponseUtil.success(null, 'OTP sent successfully to your email');
   }
@@ -240,7 +232,7 @@ export class AuthService {
     });
 
     const from = this.configService.get<string>('SMTP_FROM') || '';
-    await this.sendOtpWithProvider(email, otp, from);
+    await MailUtil.sendOtpEmail(email, otp, from);
 
     return ResponseUtil.success(null, 'OTP resent successfully to your email');
   }
@@ -308,7 +300,7 @@ export class AuthService {
     });
 
     const from = this.configService.get<string>('SMTP_FROM') || '';
-    await this.sendOtpWithProvider(email, otp, from);
+    await MailUtil.sendOtpEmail(email, otp, from);
 
     return ResponseUtil.success(null, 'Password reset OTP sent to your email');
   }
@@ -353,15 +345,6 @@ export class AuthService {
     await this.prisma.client.userOtp.delete({ where: { id: storedOtp.id } });
 
     return ResponseUtil.success(null, 'Password reset successfully');
-  }
-
-  private async sendOtpWithProvider(to: string, otp: string, from: string) {
-    if (this.useResend) {
-      await MailResendUtil.sendOtpEmail(to, otp, from);
-      return;
-    }
-
-    await MailUtil.sendOtpEmail(to, otp, from);
   }
 
 }
