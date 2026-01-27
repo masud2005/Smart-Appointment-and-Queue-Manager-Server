@@ -17,7 +17,7 @@ export const getMailConfig = () => {
   return {
     host: process.env.SMTP_HOST as string,
     port: Number(process.env.SMTP_PORT),
-    secure: false,
+    secure: true,
     requireTLS: true,
     auth: {
       user: process.env.SMTP_USER as string,
