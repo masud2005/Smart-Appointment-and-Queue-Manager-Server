@@ -18,6 +18,7 @@ export class MailUtil {
       tls: {
         rejectUnauthorized: false,
         minVersion: 'TLSv1.2',
+        servername: 'smtp.gmail.com',
       },
       connectionTimeout: config.connectionTimeout || 30000,
       greetingTimeout: config.greetingTimeout || 30000,
