@@ -14,6 +14,9 @@ export class MailUtil {
         user: config.auth.user,
         pass: config.auth.pass,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
   }
 
