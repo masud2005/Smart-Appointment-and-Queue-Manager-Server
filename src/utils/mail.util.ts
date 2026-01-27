@@ -10,7 +10,7 @@ export class MailUtil {
       host: config.host,
       port: config.port,
       secure: config.secure,
-      requireTLS: config.requireTLS || true,
+      requireTLS: config.requireTLS ?? true,
       auth: {
         user: config.auth.user,
         pass: config.auth.pass,
