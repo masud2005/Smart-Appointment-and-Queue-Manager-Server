@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export interface MailConfig {
   host: string;
   port: number;
@@ -11,13 +12,16 @@ export interface MailConfig {
   connectionTimeout?: number;
   greetingTimeout?: number;
   socketTimeout?: number;
+  tls?: {
+    rejectUnauthorized: boolean;
+  };
 }
 
-export const getMailConfig = () => {
+export const getMailConfig = (): MailConfig => {
   return {
-    host: process.env.SMTP_HOST as string,
-    port: Number(process.env.SMTP_PORT),
-    secure: true,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: false,
     requireTLS: true,
     auth: {
       user: process.env.SMTP_USER as string,
@@ -27,5 +31,8 @@ export const getMailConfig = () => {
     connectionTimeout: 30000,
     greetingTimeout: 30000,
     socketTimeout: 30000,
+    tls: {
+      rejectUnauthorized: false,
+    },
   };
 };

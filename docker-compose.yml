@@ -2,57 +2,17 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16-alpine
-    container_name: smart-appointment-db
-    restart: unless-stopped
+    image: postgres:15
+    container_name: smart_appointment_db
+    restart: always
     environment:
+      POSTGRES_USER: smart-appointment-user
+      POSTGRES_PASSWORD: smart-appointment-pass
       POSTGRES_DB: smart-appointment-db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - smart-appointment-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d smart-appointment-db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: smart-appointment-server
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      PORT: 3000
-      NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/smart-appointment-db?schema=public
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production-2026
-      JWT_EXPIRES_IN: 7d
-      FRONTEND_URL: https://smartflow-hq.vercel.app
-      SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 587
-      SMTP_SECURE: false
-      SMTP_USER: masud.softvenceomega@gmail.com
-      SMTP_PASS: tdrb izje ydhv udyv
-      SMTP_FROM: masud.softvenceomega@gmail.com
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - smart-appointment-network
-    volumes:
-      - ./prisma:/app/prisma
-
-networks:
-  smart-appointment-network:
-    driver: bridge
+      - pg_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  pg_data:
