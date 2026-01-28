@@ -7,19 +7,24 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Multiple CORS Origins
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    ...(process.env.FRONTEND_URL
-      ? process.env.FRONTEND_URL.split(',')
-      : []),
-  ];
+  // const allowedOrigins = [
+  //   'http://localhost:5173',
+  //   'http://localhost:3000',
+  //   ...(process.env.FRONTEND_URL
+  //     ? process.env.FRONTEND_URL.split(',')
+  //     : []),
+  // ];
+
+  // app.enableCors({
+  //   origin: allowedOrigins,
+  //   credentials: true,
+  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  //   allowedHeaders: ['Content-Type', 'Authorization'],
+  // });
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin:true,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Global API prefix
@@ -42,7 +47,6 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Server is running on port ${process.env.PORT ?? 3000}`);
-  console.log('Allowed Origins:', allowedOrigins);
 }
 
 void bootstrap();
