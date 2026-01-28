@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   ConflictException,
@@ -55,7 +56,7 @@ export class AuthService {
         email,
         password: hashedPassword,
         name,
-        isVerified: false,
+        isVerified: true,
       },
       select: {
         id: true,
@@ -81,12 +82,14 @@ export class AuthService {
       },
     });
 
-    const from = this.configService.get<string>('SMTP_FROM') || '';
-    await MailUtil.sendOtpEmail(email, otp, from);
+    if (user?.isVerified === false) {
+      const from = this.configService.get<string>('SMTP_FROM') || '';
+      await MailUtil.sendOtpEmail(email, otp, from);
+    }
 
     return ResponseUtil.created(
       user,
-      'User registered successfully. Check your email for verification code.',
+      user.isVerified ? 'Registration successful.' : 'Registration successful. Please verify your email using the OTP sent to your inbox.',
     );
   }
 
