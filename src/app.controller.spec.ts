@@ -15,9 +15,9 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Smart Appointment & Queue Manager API Server Running..."', () => {
+    it('should return "Smart Flow HQ API Server Running..."', () => {
       expect(appController.getHello()).toBe(
-        'Smart Appointment & Queue Manager API Server Running...',
+        'Smart Flow HQ API Server Running...',
       );
     });
   });

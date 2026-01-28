@@ -1,4 +1,4 @@
-# Smart Appointment & Queue Manager – Backend API
+# Smart Flow HQ – Backend API
 
 Production-ready NestJS backend for salons/clinics/service desks. Provides appointment scheduling, smart queueing, staff/service management, email-based OTP verification, and operational dashboards. Built with TypeScript, Prisma, and PostgreSQL for reliable, scalable delivery.
 

@@ -20,6 +20,6 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Smart Appointment & Queue Manager API Server Running...');
+      .expect('Smart Flow HQ API Server Running...');
   });
 });

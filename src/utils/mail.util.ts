@@ -34,7 +34,7 @@ export class MailUtil {
     const mailOptions = {
       from,
       to,
-      subject: 'Your Verification Code - Smart Appointment & Queue Manager',
+      subject: 'Your Verification Code - Smart Flow HQ',
       html: `
         <!DOCTYPE html>
         <html>
@@ -49,9 +49,9 @@ export class MailUtil {
               <td align="center" style="padding:40px 20px;">
                 <table role="presentation" width="100%" style="max-width:520px; background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e0e4e8;">
                   <tr>
-                    <td style="background:#4f46e5; padding:32px 24px; text-align:center; color:white;">
+                    <td style="background:#0d9488; padding:32px 24px; text-align:center; color:white;">
                       <h1 style="margin:0; font-size:24px; font-weight:600;">Verification Code</h1>
-                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Appointment & Queue Manager</p>
+                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Flow HQ</p>
                     </td>
                   </tr>
                   <tr>
@@ -59,7 +59,7 @@ export class MailUtil {
                       <p style="margin:0 0 24px; font-size:16px; line-height:1.5;">Hello,</p>
                       <p style="margin:0 0 32px; font-size:15px; color:#555;">Use the code below to verify your account:</p>
                       
-                      <div style="font-size:36px; font-weight:bold; letter-spacing:8px; color:#4f46e5; background:#f8f9fa; padding:20px; border-radius:8px; margin:0 auto 32px; max-width:240px;">
+                      <div style="font-size:36px; font-weight:bold; letter-spacing:8px; color:#0d9488; background:#f8f9fa; padding:20px; border-radius:8px; margin:0 auto 32px; max-width:240px;">
                         ${otp}
                       </div>
                       
@@ -74,7 +74,7 @@ export class MailUtil {
                   </tr>
                   <tr>
                     <td style="background:#f8f9fa; padding:24px; text-align:center; font-size:13px; color:#666; border-top:1px solid #e0e4e8;">
-                      Smart Appointment & Queue Manager Team<br>
+                      Smart Flow HQ Team<br>
                       © ${new Date().getFullYear()} All rights reserved.
                     </td>
                   </tr>
@@ -103,7 +103,7 @@ export class MailUtil {
     const mailOptions = {
       from,
       to,
-      subject: 'Welcome to Smart Appointment & Queue Manager!',
+      subject: 'Welcome to Smart Flow HQ!',
       html: `
         <!DOCTYPE html>
         <html>
@@ -118,16 +118,16 @@ export class MailUtil {
               <td align="center" style="padding:40px 20px;">
                 <table role="presentation" width="100%" style="max-width:520px; background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e0e4e8;">
                   <tr>
-                    <td style="background:#4f46e5; padding:32px 24px; text-align:center; color:white;">
+                    <td style="background:#0d9488; padding:32px 24px; text-align:center; color:white;">
                       <h1 style="margin:0; font-size:26px; font-weight:600;">Welcome aboard!</h1>
-                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Appointment & Queue Manager</p>
+                      <p style="margin:8px 0 0; font-size:15px; opacity:0.9;">Smart Flow HQ</p>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding:40px 32px;">
                       <p style="margin:0 0 20px; font-size:18px; font-weight:600;">Hi ${name},</p>
                       <p style="margin:0 0 28px; font-size:15px; line-height:1.6; color:#555;">
-                        Thank you for joining Smart Appointment & Queue Manager.<br>
+                        Thank you for joining Smart Flow HQ.<br>
                         We're excited to have you with us!
                       </p>
 
@@ -141,7 +141,7 @@ export class MailUtil {
                       </div>
 
                       <div style="text-align:center; margin:0 0 32px;">
-                        <a href="#" style="display:inline-block; background:#4f46e5; color:white; text-decoration:none; padding:14px 36px; border-radius:6px; font-weight:600; font-size:15px;">
+                        <a href="#" style="display:inline-block; background:#0d9488; color:white; text-decoration:none; padding:14px 36px; border-radius:6px; font-weight:600; font-size:15px;">
                           Get Started
                         </a>
                       </div>
@@ -153,7 +153,7 @@ export class MailUtil {
                   </tr>
                   <tr>
                     <td style="background:#f8f9fa; padding:24px; text-align:center; font-size:13px; color:#666; border-top:1px solid #e0e4e8;">
-                      Smart Appointment & Queue Manager Team<br>
+                      Smart Flow HQ Team<br>
                       © ${new Date().getFullYear()} All rights reserved.
                     </td>
                   </tr>

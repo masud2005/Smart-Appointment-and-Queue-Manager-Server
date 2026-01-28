@@ -22,9 +22,7 @@ services:
       retries: 5
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: masud2005/smart-appointment-server:latest  # Use your Docker Hub image
     container_name: smart-appointment-server
     restart: unless-stopped
     ports:
@@ -37,8 +35,8 @@ services:
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: https://smartflow-hq.vercel.app
       SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 587
-      SMTP_SECURE: false
+      SMTP_PORT: 465
+      SMTP_SECURE: true
       SMTP_USER: masud.softvenceomega@gmail.com
       SMTP_PASS: tdrb izje ydhv udyv
       SMTP_FROM: masud.softvenceomega@gmail.com
@@ -47,8 +45,6 @@ services:
         condition: service_healthy
     networks:
       - smart-appointment-network
-    volumes:
-      - ./prisma:/app/prisma
 
 networks:
   smart-appointment-network:

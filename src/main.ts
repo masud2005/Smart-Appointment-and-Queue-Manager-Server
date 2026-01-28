@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -5,20 +6,28 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // * CORS Configuration
+  // Multiple CORS Origins
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    ...(process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(',')
+      : []),
+  ];
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // * Global API prefix
+  // Global API prefix
   app.setGlobalPrefix('api/v1');
 
-  // * Swagger config with Bearer Auth
+  // Swagger config with Bearer Auth
   const config = new DocumentBuilder()
-    .setTitle('Smart Appointment & Queue Manager API')
+    .setTitle('Smart Flow HQ API')
     .setDescription('The API description')
     .setVersion('1.0')
     .addBearerAuth()
@@ -33,7 +42,7 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Server is running on port ${process.env.PORT ?? 3000}`);
-  console.log('Environment:', process.env.FRONTEND_URL);
+  console.log('Allowed Origins:', allowedOrigins);
 }
 
 void bootstrap();
